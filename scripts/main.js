@@ -2,13 +2,68 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
+    
+    // Multiple fallback initializations
+    setTimeout(() => {
+        console.log('Fallback 1: Reinitializing tabs...');
+        initializeTabs();
+    }, 500);
+    
+    setTimeout(() => {
+        console.log('Fallback 2: Force tab setup...');
+        forceTabSetup();
+    }, 1000);
 });
+
+// Force tab setup function
+function forceTabSetup() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    
+    console.log('Force setup - Buttons:', tabButtons.length, 'Panels:', tabPanels.length);
+    
+    if (tabButtons.length > 0 && tabPanels.length > 0) {
+        // Remove all existing event listeners and add fresh ones
+        tabButtons.forEach(button => {
+            // Clone node to remove all event listeners
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+        });
+        
+        // Re-attach event listeners to cloned buttons
+        const freshButtons = document.querySelectorAll('.tab-btn');
+        freshButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const target = this.getAttribute('data-tab');
+                console.log('Force click on:', target);
+                
+                // Update buttons
+                freshButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update panels
+                tabPanels.forEach(panel => panel.classList.remove('active'));
+                const targetPanel = document.getElementById(target);
+                if (targetPanel) {
+                    targetPanel.classList.add('active');
+                    console.log('Force activated:', target);
+                }
+            });
+        });
+        
+        console.log('Force tab setup completed');
+    }
+}
 
 function initializeApp() {
     // Initialize all components
     initializeTabs();
     initializeFormValidation();
     initializeScrollAnimations();
+    initializeNumberAnimations();
     initializeRippleEffects();
     initializeSmoothScrolling();
     initializeHeaderBehavior();
@@ -19,26 +74,67 @@ function initializeApp() {
 
 // ===== TAB SYSTEM =====
 function initializeTabs() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
     
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
+    // Debug log to check if elements are found
+    console.log('Tab buttons found:', tabButtons.length);
+    console.log('Tab panels found:', tabPanels.length);
+    console.log('Tab buttons:', Array.from(tabButtons).map(btn => btn.getAttribute('data-tab')));
+    console.log('Tab panels:', Array.from(tabPanels).map(panel => panel.id));
+    
+    if (tabButtons.length === 0 || tabPanels.length === 0) {
+        console.warn('Tab elements not found');
+        return;
+    }
+    
+    tabButtons.forEach((button, index) => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
             const targetTab = this.getAttribute('data-tab');
+            console.log('Tab clicked:', targetTab);
             
-            // Remove active class from all buttons and contents
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
+            // Remove active class from all buttons and panels
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
             
-            // Add active class to clicked button and corresponding content
+            // Add active class to clicked button
             this.classList.add('active');
-            const targetContent = document.getElementById(targetTab);
-            if (targetContent) {
-                targetContent.classList.add('active');
+            
+            // Find and activate the corresponding panel
+            const targetPanel = document.getElementById(targetTab);
+            if (targetPanel && targetPanel.classList.contains('tab-panel')) {
+                targetPanel.classList.add('active');
+                console.log('Panel activated:', targetTab);
+                
+                // Trigger reflow to ensure animation works
+                targetPanel.offsetHeight;
+                
+            } else {
+                console.error('Target panel not found or invalid:', targetTab, targetPanel);
+                
+                // Fallback: try to find any panel with matching ID
+                const allPanels = document.querySelectorAll('[id="' + targetTab + '"]');
+                console.log('Alternative panels found:', allPanels.length);
+                allPanels.forEach(panel => {
+                    panel.classList.add('active');
+                });
             }
             
             // Add ripple effect
-            createRipple(this, event);
+            if (typeof createRipple === 'function') {
+                createRipple(this, event);
+            }
+        });
+        
+        // Add keyboard support
+        button.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                this.click();
+            }
         });
     });
 }
@@ -46,17 +142,44 @@ function initializeTabs() {
 // ===== FORM VALIDATION =====
 function initializeFormValidation() {
     const form = document.querySelector('.contact-form');
+    if (!form) {
+        console.log('Contact form not found on this page');
+        return;
+    }
     const inputs = form.querySelectorAll('input[required], select[required]');
+    const progressBar = document.getElementById('formProgressBar');
+    
+    // Update progress bar
+    function updateProgress() {
+        const validFields = Array.from(inputs).filter(input => validateField(input, true));
+        const progress = (validFields.length / inputs.length) * 100;
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+        }
+    }
     
     // Real-time validation
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
             validateField(this);
+            updateProgress();
         });
         
         input.addEventListener('input', function() {
             if (this.classList.contains('error')) {
                 validateField(this);
+            }
+            updateProgress();
+        });
+        
+        // Add success state
+        input.addEventListener('input', function() {
+            const container = this.closest('.md-text-field') || this.closest('.md-select');
+            if (this.value.trim() && !container.classList.contains('error')) {
+                container.classList.add('success');
+                setTimeout(() => {
+                    container.classList.remove('success');
+                }, 2000);
             }
         });
     });
@@ -80,13 +203,13 @@ function initializeFormValidation() {
     });
 }
 
-function validateField(field) {
+function validateField(field, silent = false) {
     const value = field.value.trim();
     const fieldContainer = field.closest('.md-text-field') || field.closest('.md-select');
     
-    // Remove previous error states
+    // Remove previous states
     field.classList.remove('error');
-    fieldContainer.classList.remove('error');
+    fieldContainer.classList.remove('error', 'success');
     
     let isValid = true;
     let errorMessage = '';
@@ -115,12 +238,25 @@ function validateField(field) {
         }
     }
     
-    if (!isValid) {
+    // URL validation
+    if (field.type === 'url' && value) {
+        try {
+            new URL(value.startsWith('http') ? value : 'https://' + value);
+        } catch {
+            isValid = false;
+            errorMessage = 'Por favor, insira uma URL válida.';
+        }
+    }
+    
+    if (!isValid && !silent) {
         field.classList.add('error');
         fieldContainer.classList.add('error');
         showFieldError(fieldContainer, errorMessage);
-    } else {
+    } else if (isValid) {
         hideFieldError(fieldContainer);
+        if (value && !silent) {
+            fieldContainer.classList.add('success');
+        }
     }
     
     return isValid;
@@ -167,35 +303,55 @@ async function submitForm(form) {
     const submitButton = form.querySelector('.form-submit');
     const originalText = submitButton.innerHTML;
     
-    // Show loading state
-    submitButton.innerHTML = '<span class="material-icons">hourglass_empty</span><span>Enviando...</span>';
+    // Show loading state with animation
+    submitButton.classList.add('loading');
     submitButton.disabled = true;
     
     try {
         // Simulate form submission
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Show success message
-        showSuccessMessage('Formulário enviado com sucesso! Entraremos em contato em breve.');
-        form.reset();
+        // Show success state
+        submitButton.classList.remove('loading');
+        submitButton.classList.add('success');
         
-        // Reset form labels
-        const textFields = form.querySelectorAll('.md-text-field');
-        textFields.forEach(field => {
-            const input = field.querySelector('input');
-            const label = field.querySelector('label');
-            if (input && label) {
-                input.classList.remove('has-value');
-            }
-        });
+        // Show success message
+        showSuccessMessage('✅ Formulário enviado! Nossa equipe entrará em contato em até 2 horas.');
+        
+        // Reset form after delay
+        setTimeout(() => {
+            form.reset();
+            resetFormState(form);
+            submitButton.classList.remove('success');
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+        }, 3000);
         
     } catch (error) {
-        showFormError('Erro ao enviar formulário. Tente novamente.');
-    } finally {
-        // Reset button
+        submitButton.classList.remove('loading');
+        showFormError('❌ Erro ao enviar formulário. Tente novamente.');
         submitButton.innerHTML = originalText;
         submitButton.disabled = false;
     }
+}
+
+function resetFormState(form) {
+    // Reset all field states
+    const fields = form.querySelectorAll('.md-text-field, .md-select');
+    fields.forEach(field => {
+        field.classList.remove('error', 'success');
+    });
+    
+    // Reset progress bar
+    const progressBar = document.getElementById('formProgressBar');
+    if (progressBar) {
+        progressBar.style.width = '0%';
+    }
+    
+    // Remove error messages
+    const errors = form.querySelectorAll('.field-error');
+    errors.forEach(error => error.remove());
+}
 }
 
 function showSuccessMessage(message) {
@@ -220,7 +376,7 @@ function showSuccessMessage(message) {
 
 // ===== SCROLL ANIMATIONS =====
 function initializeScrollAnimations() {
-    const animatedElements = document.querySelectorAll('.benefit-card, .goal-card, .success-card');
+    const animatedElements = document.querySelectorAll('.float-card, .offer-card, .power-card, .story-card');
     
     const observerOptions = {
         threshold: 0.1,
@@ -242,9 +398,90 @@ function initializeScrollAnimations() {
     });
 }
 
+// ===== NUMBER ANIMATIONS =====
+function initializeNumberAnimations() {
+    const numberElements = document.querySelectorAll('.card-value, .metric-value, .metric-big, .amount, .proof-number, .benefit-value');
+    
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateNumber(entry.target);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    numberElements.forEach(element => {
+        observer.observe(element);
+    });
+}
+
+function animateNumber(element) {
+    const text = element.textContent;
+    const hasPercentage = text.includes('%');
+    const hasPlus = text.includes('+');
+    const hasX = text.includes('x');
+    const hasDecimal = text.includes('.');
+    
+    // Extract number from text
+    let targetNumber = parseFloat(text.replace(/[^\d.,]/g, '').replace(',', '.'));
+    
+    if (isNaN(targetNumber)) return;
+    
+    const duration = 2000; // 2 seconds
+    const startTime = performance.now();
+    const startNumber = 0;
+    
+    function updateNumber(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        
+        const currentNumber = startNumber + (targetNumber - startNumber) * easeOutExpo;
+        
+        let displayValue = '';
+        
+        if (hasDecimal && targetNumber < 100) {
+            displayValue = currentNumber.toFixed(1);
+        } else if (targetNumber >= 1000) {
+            displayValue = Math.round(currentNumber).toLocaleString('pt-BR');
+        } else {
+            displayValue = Math.round(currentNumber).toString();
+        }
+        
+        // Add prefixes/suffixes back
+        if (hasPlus) displayValue = '+' + displayValue;
+        if (hasPercentage) displayValue += '%';
+        if (hasX) displayValue += 'x';
+        
+        // Special handling for currency
+        if (text.includes('R$')) {
+            displayValue = 'R$ ' + displayValue.replace('R$ ', '');
+        }
+        
+        element.textContent = displayValue;
+        
+        if (progress < 1) {
+            requestAnimationFrame(updateNumber);
+        } else {
+            // Ensure final value is exact
+            element.textContent = text;
+        }
+    }
+    
+    requestAnimationFrame(updateNumber);
+}
+
 // ===== RIPPLE EFFECTS =====
 function initializeRippleEffects() {
-    const rippleElements = document.querySelectorAll('.md-filled-button, .md-outlined-button, .tab-button');
+    const rippleElements = document.querySelectorAll('.md-filled-button, .md-outlined-button, .tab-btn');
     
     rippleElements.forEach(element => {
         element.addEventListener('click', function(e) {
@@ -285,7 +522,7 @@ function initializeSmoothScrolling() {
             const targetElement = document.getElementById(targetId);
             
             if (targetElement) {
-                const headerHeight = document.querySelector('.md-top-app-bar').offsetHeight;
+                const headerHeight = document.querySelector('.header-premium').offsetHeight;
                 const targetPosition = targetElement.offsetTop - headerHeight - 20;
                 
                 window.scrollTo({
@@ -302,7 +539,7 @@ function initializeSmoothScrolling() {
 
 // ===== HEADER BEHAVIOR =====
 function initializeHeaderBehavior() {
-    const header = document.querySelector('.md-top-app-bar');
+    const header = document.querySelector('.header-premium');
     let lastScrollY = window.scrollY;
     let ticking = false;
     
@@ -390,6 +627,36 @@ document.addEventListener('DOMContentLoaded', function() {
             formatPhoneNumber(this);
         });
     });
+    
+    // Additional manual tab initialization for safety
+    if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
+        // Initialize tabs manually after page load
+        setTimeout(() => {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            
+            if (tabBtns.length > 0 && tabPanels.length > 0) {
+                tabBtns.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const target = this.getAttribute('data-tab');
+                        
+                        // Remove all active classes
+                        tabBtns.forEach(b => b.classList.remove('active'));
+                        tabPanels.forEach(p => p.classList.remove('active'));
+                        
+                        // Add active to clicked button and target panel
+                        this.classList.add('active');
+                        const targetPanel = document.getElementById(target);
+                        if (targetPanel) {
+                            targetPanel.classList.add('active');
+                        }
+                    });
+                });
+                console.log('Manual tab initialization completed');
+            }
+        }, 1000);
+    }
 });
 
 // ===== PERFORMANCE OPTIMIZATIONS =====
@@ -421,7 +688,7 @@ function throttle(func, limit) {
 // ===== ACCESSIBILITY ENHANCEMENTS =====
 function initializeAccessibility() {
     // Keyboard navigation for tabs
-    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabButtons = document.querySelectorAll('.tab-btn');
     tabButtons.forEach((button, index) => {
         button.addEventListener('keydown', function(e) {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
