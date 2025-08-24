@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 30" width="80" height="30">
+  <rect width="80" height="30" fill="#34a853" rx="4"/>
+  <path d="M12 10 L12 18 L14 20 L18 20 L20 18 L20 10 L16 8 L12 10 Z" fill="white"/>
+  <circle cx="16" cy="14" r="2" fill="#34a853"/>
+  <text x="28" y="13" fill="white" font-family="Arial, sans-serif" font-size="6" font-weight="600">LGPD</text>
+  <text x="28" y="21" fill="white" font-family="Arial, sans-serif" font-size="5">COMPLIANT</text>
+</svg>
