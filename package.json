@@ -1,0 +1,65 @@
+{
+  "name": "f5-google-ads-landing",
+  "version": "1.0.0",
+  "description": "F5 Google Ads Landing Page - Material Design 3",
+  "main": "index.html",
+  "scripts": {
+    "serve": "python -m http.server 8000",
+    "serve:node": "npx serve .",
+    "deploy": "node deploy.js",
+    "deploy:bash": "./deploy.sh",
+    "firebase:login": "firebase login",
+    "firebase:deploy": "firebase deploy --project lp-f5--621190968",
+    "firebase:serve": "firebase serve --project lp-f5--621190968",
+    "git:push": "git add . && git commit -m \"Update $(date +'%Y-%m-%d %H:%M:%S')\" && git push origin main",
+    "build:check": "echo '🔍 Verificando arquivos...' && ls -la index.html styles/ scripts/ assets/",
+    "optimize:images": "echo '🖼️ Para otimizar imagens, use: imageoptim ou tinypng.com'",
+    "test:mobile": "echo '📱 Teste mobile em: https://lp-f5--621190968.web.app'",
+    "lighthouse": "npx lighthouse https://lp-f5--621190968.web.app --output html --output-path ./lighthouse-report.html",
+    "pagespeed": "echo '📊 PageSpeed: https://pagespeed.web.dev/analysis?url=https://lp-f5--621190968.web.app'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/japatraderdev99/landing-pagr-f5-google.git"
+  },
+  "keywords": [
+    "landing-page",
+    "google-ads",
+    "material-design",
+    "firebase-hosting",
+    "html",
+    "css",
+    "javascript",
+    "responsive",
+    "mobile-first"
+  ],
+  "author": "F5 Estratégia",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^12.0.0",
+    "serve": "^14.0.0",
+    "lighthouse": "^10.0.0"
+  },
+  "firebase": {
+    "project": "lp-f5--621190968",
+    "hosting": {
+      "public": "./",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "README.md",
+        "**/*.md"
+      ]
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
