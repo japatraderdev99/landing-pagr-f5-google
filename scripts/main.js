@@ -2,6 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
+    initializeMobileOptimizations();
     
     // Multiple fallback initializations
     setTimeout(() => {
@@ -990,3 +991,205 @@ function initializeLazyLoading() {
 
 // Initialize lazy loading
 document.addEventListener('DOMContentLoaded', initializeLazyLoading);
+
+// ===== MOBILE OPTIMIZATIONS =====
+
+function initializeMobileOptimizations() {
+    // Improve touch interactions
+    optimizeTouchTargets();
+    
+    // Mobile navigation enhancements
+    improveMobileNavigation();
+    
+    // Viewport height fix for mobile browsers
+    fixViewportHeight();
+    
+    // Optimize scroll performance
+    optimizeScrollPerformance();
+    
+    // Handle device orientation changes
+    handleOrientationChange();
+    
+    console.log('Mobile optimizations initialized');
+}
+
+function optimizeTouchTargets() {
+    // Ensure all interactive elements meet minimum touch target size
+    const interactiveElements = document.querySelectorAll('button, a, .tab-btn, .mobile-nav-link, input, select');
+    
+    interactiveElements.forEach(element => {
+        const rect = element.getBoundingClientRect();
+        if (rect.width < 48 || rect.height < 48) {
+            element.style.minWidth = '48px';
+            element.style.minHeight = '48px';
+            element.style.display = 'flex';
+            element.style.alignItems = 'center';
+            element.style.justifyContent = 'center';
+        }
+        
+        // Add touch feedback
+        element.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.98)';
+            this.style.transition = 'transform 0.1s ease';
+        }, { passive: true });
+        
+        element.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1)';
+        }, { passive: true });
+    });
+}
+
+function improveMobileNavigation() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileNav = document.getElementById('mobileNav');
+    
+    if (mobileMenuToggle && mobileNav) {
+        // Add swipe gestures for mobile menu
+        let startY, startX;
+        
+        mobileMenuToggle.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+            startX = e.touches[0].clientX;
+        }, { passive: true });
+        
+        // Smooth scroll for anchor links
+        const anchorLinks = document.querySelectorAll('a[href^="#"]');
+        anchorLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    // Close mobile menu if open
+                    if (mobileNav.classList.contains('active')) {
+                        mobileNav.classList.remove('active');
+                    }
+                    
+                    // Smooth scroll with offset for fixed header
+                    const headerHeight = document.querySelector('.header-premium')?.offsetHeight || 80;
+                    const targetPosition = target.offsetTop - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    }
+}
+
+function fixViewportHeight() {
+    // Fix for mobile browsers changing viewport height
+    function setVH() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(setVH, 100);
+    });
+}
+
+function optimizeScrollPerformance() {
+    // Passive scroll listeners for better performance
+    let ticking = false;
+    
+    function updateScrollPosition() {
+        const scrolled = window.pageYOffset;
+        const header = document.querySelector('.header-premium');
+        
+        if (header) {
+            if (scrolled > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        }
+        
+        ticking = false;
+    }
+    
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            requestAnimationFrame(updateScrollPosition);
+            ticking = true;
+        }
+    }, { passive: true });
+    
+    // Improve CSS animations performance
+    const animatedElements = document.querySelectorAll('[class*="float-"], .hero-visual, .metric-card');
+    
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '50px'
+    };
+    
+    const animationObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+            }
+        });
+    }, observerOptions);
+    
+    animatedElements.forEach(el => animationObserver.observe(el));
+}
+
+function handleOrientationChange() {
+    window.addEventListener('orientationchange', function() {
+        // Force layout recalculation after orientation change
+        setTimeout(() => {
+            window.scrollTo(0, window.pageYOffset);
+            
+            // Recalculate any fixed positioning
+            const fixedElements = document.querySelectorAll('.header-premium, .mobile-nav');
+            fixedElements.forEach(el => {
+                el.style.transform = 'translateZ(0)'; // Force hardware acceleration
+            });
+        }, 100);
+    });
+}
+
+// Add CSS for scrolled header state
+const style = document.createElement('style');
+style.textContent = \`
+.header-premium.scrolled {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.animate {
+    animation-play-state: running;
+}
+
+/* Better touch feedback */
+@media (hover: none) and (pointer: coarse) {
+    .md-filled-button:active,
+    .md-outlined-button:active,
+    .tab-btn:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* Optimize animations for mobile */
+@media (max-width: 768px) {
+    .float-card {
+        animation-duration: 2s;
+        animation-iteration-count: 1;
+    }
+    
+    .hero-visual {
+        transform: none !important;
+    }
+    
+    .dashboard-mockup:hover {
+        transform: none !important;
+    }
+}
+\`;
+document.head.appendChild(style);
