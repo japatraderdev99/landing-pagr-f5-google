@@ -742,8 +742,51 @@ function trackEvent(eventName, properties = {}) {
     console.log('Event tracked:', eventName, properties);
 }
 
+// ===================================
+// MOBILE MENU FUNCTIONALITY
+// ===================================
+function initMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link, .mobile-cta');
+    
+    if (mobileMenuToggle && mobileNav) {
+        mobileMenuToggle.addEventListener('click', function() {
+            mobileNav.classList.toggle('active');
+            
+            // Animate hamburger to X
+            const icon = this.querySelector('.material-symbols-rounded');
+            if (mobileNav.classList.contains('active')) {
+                icon.textContent = 'close';
+            } else {
+                icon.textContent = 'menu';
+            }
+        });
+        
+        // Close menu when clicking on links
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileNav.classList.remove('active');
+                const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
+                icon.textContent = 'menu';
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+                mobileNav.classList.remove('active');
+                const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
+                icon.textContent = 'menu';
+            }
+        });
+    }
+}
+
 // Track form submissions
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize mobile menu
+    initMobileMenu();
     const form = document.querySelector('.contact-form');
     if (form) {
         form.addEventListener('submit', function() {
