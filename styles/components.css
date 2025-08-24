@@ -1,0 +1,93 @@
+/* Material Web Components Customization */
+
+/* Button Customizations */
+md-filled-button {
+  --md-filled-button-container-color: var(--md-sys-color-primary);
+  --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
+  --md-filled-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-filled-button-hover-container-color: #3367d6;
+  --md-filled-button-pressed-container-color: #2a56c6;
+  font: var(--md-sys-typescale-label-large);
+  height: 48px;
+  padding: 0 24px;
+  min-width: 200px;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+md-filled-button:hover {
+  box-shadow: var(--md-sys-elevation-level3);
+  transform: translateY(-2px);
+}
+
+md-outlined-button {
+  --md-outlined-button-outline-color: var(--md-sys-color-outline);
+  --md-outlined-button-label-text-color: var(--md-sys-color-primary);
+  --md-outlined-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-outlined-button-hover-outline-color: var(--md-sys-color-primary);
+  font: var(--md-sys-typescale-label-large);
+  height: 40px;
+  padding: 0 24px;
+}
+
+/* Text Field Customizations */
+md-outlined-text-field {
+  --md-outlined-text-field-container-shape: var(--md-sys-shape-corner-small);
+  --md-outlined-text-field-outline-color: var(--md-sys-color-outline);
+  --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant);
+  --md-outlined-text-field-focus-label-text-color: var(--md-sys-color-primary);
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+md-outlined-select {
+  --md-outlined-select-text-field-container-shape: var(--md-sys-shape-corner-small);
+  --md-outlined-select-text-field-outline-color: var(--md-sys-color-outline);
+  --md-outlined-select-text-field-focus-outline-color: var(--md-sys-color-primary);
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Card Customizations */
+md-filled-card {
+  --md-filled-card-container-color: var(--md-sys-color-surface-container-low);
+  --md-filled-card-container-shape: var(--md-sys-shape-corner-medium);
+  --md-filled-card-container-elevation: var(--md-sys-elevation-level1);
+  padding: 24px;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+md-filled-card:hover {
+  --md-filled-card-container-elevation: var(--md-sys-elevation-level3);
+  transform: translateY(-4px);
+}
+
+md-outlined-card {
+  --md-outlined-card-outline-color: var(--md-sys-color-outline-variant);
+  --md-outlined-card-container-shape: var(--md-sys-shape-corner-medium);
+  padding: 24px;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+md-outlined-card:hover {
+  --md-outlined-card-outline-color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-level2);
+  transform: translateY(-2px);
+}
+
+/* Chip Customizations */
+md-chip-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+md-assist-chip {
+  --md-assist-chip-container-shape: var(--md-sys-shape-corner-small);
+  --md-assist-chip-outline-color: rgba(255, 255, 255, 0.3);
+  --md-assist-chip-label-text-color: white;
+  --md-assist-chip-container-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  font: var(--md-sys-typescale-label-medium);
+}

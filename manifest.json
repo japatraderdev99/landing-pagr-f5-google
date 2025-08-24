@@ -1,0 +1,107 @@
+{
+  "name": "F5 Google Ads - Landing Page",
+  "short_name": "F5 Ads",
+  "description": "Agência Google Partner oficial. Fature 3x mais com Google Ads em 5 dias.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4285f4",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  
+  "icons": [
+    {
+      "src": "/assets/images/logo-f5-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/images/logo-f5-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/images/logo-f5-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/images/logo-f5-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/assets/images/logo-f5-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  
+  "categories": ["business", "marketing", "productivity"],
+  "keywords": ["google ads", "marketing digital", "pme", "google partner"],
+  
+  "shortcuts": [
+    {
+      "name": "Formulário de Contato",
+      "short_name": "Contato",
+      "description": "Solicite uma proposta personalizada",
+      "url": "/#contato",
+      "icons": [
+        {
+          "src": "/assets/icons/contact-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Nossos Serviços",
+      "short_name": "Serviços",
+      "description": "Conheça nossos serviços Google Ads",
+      "url": "/#servicos",
+      "icons": [
+        {
+          "src": "/assets/icons/services-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  
+  "screenshots": [
+    {
+      "src": "/assets/images/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide"
+    },
+    {
+      "src": "/assets/images/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow"
+    }
+  ],
+  
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://f5estrategia.com.br"
+    }
+  ],
+  
+  "prefer_related_applications": false,
+  
+  "protocol_handlers": [
+    {
+      "protocol": "mailto",
+      "url": "/#contato?email=%s"
+    }
+  ]
+}
