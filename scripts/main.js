@@ -751,34 +751,192 @@ function initMobileMenu() {
     const mobileNavLinks = document.querySelectorAll('.mobile-nav-link, .mobile-cta');
     
     if (mobileMenuToggle && mobileNav) {
-        mobileMenuToggle.addEventListener('click', function() {
-            mobileNav.classList.toggle('active');
+        let isMenuOpen = false;
+        
+        // Enhanced touch-friendly menu toggle
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            mobileNav.classList.toggle('active', isMenuOpen);
             
-            // Animate hamburger to X
-            const icon = this.querySelector('.material-symbols-rounded');
-            if (mobileNav.classList.contains('active')) {
-                icon.textContent = 'close';
-            } else {
-                icon.textContent = 'menu';
+            // Smooth icon transition
+            const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
+            if (icon) {
+                icon.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    icon.textContent = isMenuOpen ? 'close' : 'menu';
+                    icon.style.transform = 'scale(1)';
+                }, 150);
+            }
+            
+            // Haptic feedback for mobile devices
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+            
+            // Update accessibility attributes
+            mobileMenuToggle.setAttribute('aria-expanded', isMenuOpen);
+            mobileNav.setAttribute('aria-hidden', !isMenuOpen);
+        }
+        
+        // Handle click and touch events
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
+        });
+        
+        // Prevent touch issues on mobile
+        mobileMenuToggle.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        });
+        
+        mobileMenuToggle.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isMenuOpen) {
+                toggleMenu();
             }
         });
         
-        // Close menu when clicking on links
+        // Close menu when clicking on links with smooth animation
         mobileNavLinks.forEach(link => {
             link.addEventListener('click', function() {
-                mobileNav.classList.remove('active');
-                const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
-                icon.textContent = 'menu';
+                // Add click feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+                
+                // Close menu after short delay for visual feedback
+                setTimeout(() => {
+                    if (isMenuOpen) {
+                        isMenuOpen = false;
+                        mobileNav.classList.remove('active');
+                        const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
+                        if (icon) {
+                            icon.textContent = 'menu';
+                        }
+                        mobileMenuToggle.setAttribute('aria-expanded', false);
+                        mobileNav.setAttribute('aria-hidden', true);
+                    }
+                }, 150);
             });
         });
         
-        // Close menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+        // Close menu when clicking outside with better touch handling
+        function handleOutsideClick(e) {
+            if (isMenuOpen && !mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+                isMenuOpen = false;
                 mobileNav.classList.remove('active');
                 const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
-                icon.textContent = 'menu';
+                if (icon) {
+                    icon.textContent = 'menu';
+                }
+                mobileMenuToggle.setAttribute('aria-expanded', false);
+                mobileNav.setAttribute('aria-hidden', true);
             }
+        }
+        
+        document.addEventListener('click', handleOutsideClick);
+        document.addEventListener('touchstart', handleOutsideClick);
+        
+        // Handle orientation change and resize
+        window.addEventListener('orientationchange', function() {
+            setTimeout(() => {
+                if (isMenuOpen) {
+                    isMenuOpen = false;
+                    mobileNav.classList.remove('active');
+                    const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
+                    if (icon) {
+                        icon.textContent = 'menu';
+                    }
+                    mobileMenuToggle.setAttribute('aria-expanded', false);
+                    mobileNav.setAttribute('aria-hidden', true);
+                }
+            }, 100);
+        });
+        
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768 && isMenuOpen) {
+                isMenuOpen = false;
+                mobileNav.classList.remove('active');
+                const icon = mobileMenuToggle.querySelector('.material-symbols-rounded');
+                if (icon) {
+                    icon.textContent = 'menu';
+                }
+                mobileMenuToggle.setAttribute('aria-expanded', false);
+                mobileNav.setAttribute('aria-hidden', true);
+            }
+        });
+        
+        // Initialize accessibility attributes
+        mobileMenuToggle.setAttribute('aria-expanded', false);
+        mobileMenuToggle.setAttribute('aria-controls', 'mobileNav');
+        mobileNav.setAttribute('aria-hidden', true);
+    }
+}
+
+// Enhanced form interactions for mobile
+function initMobileFormEnhancements() {
+    const formInputs = document.querySelectorAll('.md-text-field input, .md-select select');
+    
+    formInputs.forEach(input => {
+        // Improve focus behavior on mobile
+        input.addEventListener('focus', function() {
+            // Scroll input into view on mobile to avoid keyboard covering
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    this.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }, 300); // Wait for keyboard animation
+            }
+            
+            // Add visual feedback
+            this.closest('.md-text-field, .md-select').style.transform = 'translateY(-2px)';
+        });
+        
+        input.addEventListener('blur', function() {
+            // Remove visual feedback
+            this.closest('.md-text-field, .md-select').style.transform = 'translateY(0)';
+        });
+        
+        // Phone number auto-formatting for Brazilian format
+        if (input.type === 'tel') {
+            input.addEventListener('input', function() {
+                let value = this.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    if (value.length <= 2) {
+                        value = value.replace(/(\d{2})/, '($1');
+                    } else if (value.length <= 6) {
+                        value = value.replace(/(\d{2})(\d{4})/, '($1) $2');
+                    } else if (value.length <= 10) {
+                        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                    } else {
+                        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                    }
+                    this.value = value;
+                }
+            });
+        }
+    });
+    
+    // Enhanced form submission with mobile feedback
+    const submitButton = document.querySelector('.form-submit');
+    if (submitButton) {
+        submitButton.addEventListener('click', function() {
+            // Add haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+            
+            // Visual feedback
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 100);
         });
     }
 }
@@ -787,6 +945,9 @@ function initMobileMenu() {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize mobile menu
     initMobileMenu();
+    
+    // Initialize mobile form enhancements
+    initMobileFormEnhancements();
     const form = document.querySelector('.contact-form');
     if (form) {
         form.addEventListener('submit', function() {
